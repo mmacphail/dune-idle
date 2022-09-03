@@ -135,6 +135,10 @@ class SpiceHarvesters(override val id: Long, override val transform: Transform =
         return harvesters
     }
 
+    fun projectedTick(): Int {
+        return harvesters
+    }
+
     override fun onReady() {
         solariReserve = Game.seekEntity { it is SolariReserve }[0] as SolariReserve
     }
@@ -156,7 +160,7 @@ class SpiceReserve(override val id: Long, override val transform: Transform = Tr
         accumulatedTime += dt
         spiceCapacity = spiceSilos.spiceCapacity()
         if (accumulatedTime >= 1.0) {
-            collectSpice(spiceHarvesters)
+            collectSpice()
         }
         if (sellReserve) {
             sellAllSpice()
@@ -164,7 +168,11 @@ class SpiceReserve(override val id: Long, override val transform: Transform = Tr
         return UpdateResult.Keep
     }
 
-    private fun collectSpice(spiceHarvesters: SpiceHarvesters) {
+    private fun spicePerSeconds(): Int {
+        return spiceHarvesters.projectedTick()
+    }
+
+    private fun collectSpice() {
         amount += spiceHarvesters.tick()
         amount = spiceCapacity.coerceAtMost(amount)
         accumulatedTime = 0.0
@@ -181,7 +189,9 @@ class SpiceReserve(override val id: Long, override val transform: Transform = Tr
         val t = transform
         with(g) {
             color = Color.BLACK
-            drawString("spice: $amount / $spiceCapacity (worth ${spiceExchangeRate.spiceToSolari(amount)} Solari)", t.x
+            drawString("spice: $amount / $spiceCapacity (${spicePerSeconds()} Sps, worth ${spiceExchangeRate.spiceToSolari
+                (amount)} Solari)",
+                t.x
                 .toInt(), t.y
                 .toInt())
             g.fillRect(t.x.toInt(), t.y.toInt() + 30, 150, 30)
