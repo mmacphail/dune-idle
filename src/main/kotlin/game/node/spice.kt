@@ -6,6 +6,7 @@ import game.component.Button
 import game.Game
 import game.component.Gui
 import game.Transform
+import game.component.BuyCapability
 import java.awt.Color
 import java.awt.Graphics2D
 
@@ -18,7 +19,7 @@ class SpiceSilos(override val id: Long, override val transform: Transform = Tran
     lateinit var buySiloButton: Button
 
     override fun update(dt: Double): UpdateResult {
-        if(buySilo) {
+        if (buySilo) {
             if (solariReserve.amount() >= siloCost) {
                 solariReserve.pay(siloCost)
                 silos += 1
@@ -62,43 +63,25 @@ class SpiceEquipmentHeader(override val id: Long, override val transform: Transf
 class SpiceHarvesters(override val id: Long, override val transform: Transform = Transform(10.0, 110.0)) : GameNode {
     var harvesters = 10
     var harvesterCost = 100
-    var buyHarvester = false
-    var buy10Harvesters = false
-    var buy100Harvesters = false
     lateinit var solariReserve: SolariReserve
     lateinit var buyHarvesterButton: Button
     lateinit var buy10HarvesterButton: Button
     lateinit var buy100HarvesterButton: Button
+    lateinit var buyHarvesters: BuyCapability
 
     override fun update(dt: Double): UpdateResult {
-        if (buyHarvester) {
-            buyHarvesters(1)
-            buyHarvester = false
-        }
-        if (buy10Harvesters) {
-            buyHarvesters(10)
-            buyHarvester = false
-        }
-        if (buy100Harvesters) {
-            buyHarvesters(100)
-            buyHarvester = false
-        }
+        buyHarvesters.update()
         return UpdateResult.Keep
-    }
-
-    private fun buyHarvesters(amount: Int) {
-        if (solariReserve.amount() >= harvesterCost * amount) {
-            solariReserve.pay(harvesterCost * amount)
-            harvesters += amount
-        }
     }
 
     override fun draw(g: Graphics2D) {
         val t = transform
         with(g) {
             color = Color.BLACK
-            drawString("Spice harvesters: $harvesters (cost: $harvesterCost Solari, +1 Sps)",
-                t.x.toInt(), t.y.toInt() + 20)
+            drawString(
+                "Spice harvesters: $harvesters (cost: $harvesterCost Solari, +1 Sps)",
+                t.x.toInt(), t.y.toInt() + 20
+            )
         }
     }
 
@@ -112,9 +95,12 @@ class SpiceHarvesters(override val id: Long, override val transform: Transform =
 
     override fun onReady() {
         solariReserve = Game.seekEntity { it is SolariReserve }[0] as SolariReserve
-        buyHarvesterButton = Gui.makeButton(transform, "Buy harvester") { buyHarvester = true }
-        buy10HarvesterButton = Gui.makeButton(transform.slideRight(160), "Buy 10 harvesters") { buy10Harvesters = true }
-        buy100HarvesterButton = Gui.makeButton(transform.slideRight(320), "Buy 100 harvesters") { buy100Harvesters = true }
+        buyHarvesterButton = Gui.makeButton(transform, "Buy harvester") { buyHarvesters.buyOnce = true }
+        buy10HarvesterButton =
+            Gui.makeButton(transform.slideRight(160), "Buy 10 harvesters") { buyHarvesters.buyTenTimes = true }
+        buy100HarvesterButton =
+            Gui.makeButton(transform.slideRight(320), "Buy 100 harvesters") { buyHarvesters.buyHundredTimes = true }
+        buyHarvesters = BuyCapability(solariReserve, harvesterCost) { units -> harvesters += units }
     }
 }
 
@@ -163,11 +149,15 @@ class SpiceReserve(override val id: Long, override val transform: Transform = Tr
         val t = transform
         with(g) {
             color = Color.BLACK
-            drawString("spice: $amount / $spiceCapacity (${spicePerSeconds()} Sps, worth ${spiceExchangeRate.spiceToSolari
-                (amount)} Solari)",
+            drawString(
+                "spice: $amount / $spiceCapacity (${spicePerSeconds()} Sps, worth ${
+                    spiceExchangeRate.spiceToSolari
+                        (amount)
+                } Solari)",
                 t.x
-                .toInt(), t.y
-                .toInt())
+                    .toInt(), t.y
+                    .toInt()
+            )
         }
     }
 
