@@ -11,9 +11,9 @@ interface GameNode {
     val id: Long
     val transform: Transform
 
-    fun update(dt: Double): UpdateResult
+    fun update(dt: Double): UpdateResult = UpdateResult.Keep
 
-    fun draw(g: Graphics2D)
+    fun draw(g: Graphics2D) {}
 
     fun onSpawn(): Unit {}
 

@@ -2,54 +2,33 @@ package game.node
 
 import eu.macphail.GameNode
 import eu.macphail.UpdateResult
-import game.component.Button
 import game.Game
-import game.component.Gui
 import game.Transform
-import game.component.BuyButtons
-import game.component.BuyCapability
+import game.component.Button
+import game.component.Equipment
+import game.component.Gui
 import java.awt.Color
 import java.awt.Graphics2D
 
 class SpiceSilos(override val id: Long, override val transform: Transform = Transform(10.0, 170.0)) : GameNode {
-    var siloCapacity = 100
-    var silos = 1
-    var siloCost = 25
-    var buySilo = false
-    lateinit var solariReserve: SolariReserve
-    lateinit var buySiloButton: Button
+    val title = "Spice silos"
+    val label = "silo"
+    val effect = "100 spice capacity"
+    val cost = 25
+    lateinit var equipment: Equipment
 
-    override fun update(dt: Double): UpdateResult {
-        if (buySilo) {
-            if (solariReserve.amount() >= siloCost) {
-                solariReserve.pay(siloCost)
-                silos += 1
-            }
-            buySilo = false
-        }
-        return UpdateResult.Keep
-    }
-
-    override fun draw(g: Graphics2D) {
-        val t = transform
-        with(g) {
-            color = Color.BLACK
-            drawString("Spice silos: $silos (cost: $siloCost Solari, 100 spice capacity)", t.x.toInt(), t.y.toInt() + 20)
-        }
-    }
+    var capacity = 100
 
     fun spiceCapacity(): Int {
-        return silos * siloCapacity
+        return equipment.units * capacity
     }
 
     override fun onReady() {
-        solariReserve = Game.seekEntity { it is SolariReserve }[0] as SolariReserve
-        buySiloButton = Gui.makeButton(Transform(transform.x, transform.y), "Buy spice silo") { buySilo = true }
+        equipment = Game.spawn { id -> Equipment(id, transform, cost, title, label, effect) }
     }
 }
 
 class SpiceEquipmentHeader(override val id: Long, override val transform: Transform = Transform(10.0, 110.0)) : GameNode {
-    override fun update(dt: Double): UpdateResult = UpdateResult.Keep
 
     override fun draw(g: Graphics2D) {
         val t = transform
@@ -62,40 +41,22 @@ class SpiceEquipmentHeader(override val id: Long, override val transform: Transf
 }
 
 class SpiceHarvesters(override val id: Long, override val transform: Transform = Transform(10.0, 110.0)) : GameNode {
-    var harvesters = 10
-    var harvesterCost = 100
-    lateinit var solariReserve: SolariReserve
-    lateinit var buyButtons: BuyButtons
-    lateinit var buyHarvesters: BuyCapability
-
-    override fun update(dt: Double): UpdateResult {
-        buyHarvesters.update()
-        return UpdateResult.Keep
-    }
-
-    override fun draw(g: Graphics2D) {
-        val t = transform
-        with(g) {
-            color = Color.BLACK
-            drawString(
-                "Spice harvesters: $harvesters (cost: $harvesterCost Solari, +1 Sps)",
-                t.x.toInt(), t.y.toInt() + 20
-            )
-        }
-    }
+    val title = "Spice Harvesters"
+    val label = "harvester"
+    val effect = "+1 Sps"
+    val cost = 100
+    lateinit var equipment: Equipment
 
     fun tick(): Int {
-        return harvesters
+        return equipment.units
     }
 
     fun projectedTick(): Int {
-        return harvesters
+        return equipment.units
     }
 
     override fun onReady() {
-        solariReserve = Game.seekEntity { it is SolariReserve }[0] as SolariReserve
-        buyHarvesters = BuyCapability(solariReserve, harvesterCost) { units -> harvesters += units }
-        buyButtons = BuyButtons(transform, "harvester", buyHarvesters )
+        equipment = Game.spawn { id -> Equipment(id, transform, cost, title, label, effect) }
     }
 }
 
