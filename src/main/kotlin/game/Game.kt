@@ -33,9 +33,10 @@ class Game {
                 }
             }
 
-            nodesToSpawn.forEach { nodes.add(it) }
-            nodesToSpawn.forEach { it.onReady() }
+            val localNodesToSpawn = nodesToSpawn.toMutableList()
             nodesToSpawn.clear()
+            localNodesToSpawn.forEach { nodes.add(it) }
+            localNodesToSpawn.forEach { it.onReady() }
 
             nodesToDestroy.forEach { nodes.remove(it) }
             nodesToDestroy.clear()

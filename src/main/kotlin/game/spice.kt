@@ -5,17 +5,14 @@ import eu.macphail.UpdateResult
 import java.awt.Color
 import java.awt.Graphics2D
 import java.awt.Rectangle
-import kotlin.math.round
 
-class SpiceSilos(override val id: Long, override val transform: Transform = Transform(10.0, 170.0)) : GameNode,
-    Bounded, EventListener {
-
+class SpiceSilos(override val id: Long, override val transform: Transform = Transform(10.0, 170.0)) : GameNode {
     var siloCapacity = 100
     var silos = 1
     var siloCost = 25
-    var bound = Rectangle(transform.x.toInt(), transform.y.toInt() + 30, 150, 30)
     var buySilo = false
     lateinit var solariReserve: SolariReserve
+    lateinit var buySiloButton: Button
 
     override fun update(dt: Double): UpdateResult {
         if(buySilo) {
@@ -33,38 +30,18 @@ class SpiceSilos(override val id: Long, override val transform: Transform = Tran
         with(g) {
             color = Color.BLACK
             drawString("Spice silos: $silos (cost: $siloCost Solari, 100 spice capacity)", t.x.toInt(), t.y.toInt() + 20)
-            g.fillRect(bound.x, bound.y, bound.width, bound.height)
-            color = Color.WHITE
-            drawString("Buy spice silo", bound.x + 20, bound.y + 20)
         }
-    }
-
-    override fun size(): Rectangle {
-        return bound
-    }
-
-    override fun onSpawn() {
-        EventBus.subscribe(id, this, EventType.MouseEvent)
-    }
-
-    override fun onDespawn() {
-        EventBus.unsubscribe(id)
     }
 
     fun spiceCapacity(): Int {
         return silos * siloCapacity
     }
 
-    override fun handleEvent(event: Event) {
-        if (event.type == EventType.MouseEvent) {
-            if (size().contains((event as MyMouseEvent).point)) {
-                buySilo = true
-            }
-        }
-    }
-
     override fun onReady() {
         solariReserve = Game.seekEntity { it is SolariReserve }[0] as SolariReserve
+        buySiloButton = Game.spawn { id ->
+            Button(id, Transform(transform.x, transform.y), "Buy spice silo") { buySilo = true }
+        }
     }
 }
 
@@ -81,12 +58,12 @@ class SpiceEquipmentHeader(override val id: Long, override val transform: Transf
 
 }
 
-class SpiceHarvesters(override val id: Long, override val transform: Transform = Transform(10.0, 110.0)) : GameNode,
-    Bounded, EventListener {
+class SpiceHarvesters(override val id: Long, override val transform: Transform = Transform(10.0, 110.0)) : GameNode {
     var harvesters = 10
     var harvesterCost = 100
     var buyHarvester = false
     lateinit var solariReserve: SolariReserve
+    lateinit var buyHarvesterButton: Button
 
     override fun update(dt: Double): UpdateResult {
         if (buyHarvester) {
@@ -105,30 +82,7 @@ class SpiceHarvesters(override val id: Long, override val transform: Transform =
             color = Color.BLACK
             drawString("Spice harvesters: $harvesters (cost: $harvesterCost Solari, +1 Sps)",
                 t.x.toInt(), t.y.toInt() + 20)
-            g.fillRect(t.x.toInt(), t.y.toInt() + 30, 150, 30)
-            color = Color.WHITE
-            drawString("Buy spice harvester", t.x.toInt() + 20, t.y.toInt() + 50)
         }
-    }
-
-    override fun size(): Rectangle {
-        return Rectangle(transform.x.toInt(), transform.y.toInt() + 30, 150, 30)
-    }
-
-    override fun handleEvent(event: Event) {
-        if (event.type == EventType.MouseEvent) {
-            if (size().contains((event as MyMouseEvent).point)) {
-                buyHarvester = true
-            }
-        }
-    }
-
-    override fun onSpawn() {
-        EventBus.subscribe(id, this, EventType.MouseEvent)
-    }
-
-    override fun onDespawn() {
-        EventBus.unsubscribe(id)
     }
 
     fun tick(): Int {
@@ -141,11 +95,13 @@ class SpiceHarvesters(override val id: Long, override val transform: Transform =
 
     override fun onReady() {
         solariReserve = Game.seekEntity { it is SolariReserve }[0] as SolariReserve
+        buyHarvesterButton = Game.spawn { id ->
+            Button(id, transform, "Buy spice harvester") { buyHarvester = true }
+        }
     }
 }
 
-class SpiceReserve(override val id: Long, override val transform: Transform = Transform(10.0, 30.0)) : GameNode,
-    Bounded, EventListener {
+class SpiceReserve(override val id: Long, override val transform: Transform = Transform(10.0, 30.0)) : GameNode {
     var amount = 0
     var accumulatedTime = 0.0
     private var sellReserve = false
@@ -155,6 +111,7 @@ class SpiceReserve(override val id: Long, override val transform: Transform = Tr
     lateinit var spiceSilos: SpiceSilos
     lateinit var spiceExchangeRate: SpiceExchangeRate
     lateinit var solariReserve: SolariReserve
+    lateinit var sellReserveButton: Button
 
     override fun update(dt: Double): UpdateResult {
         accumulatedTime += dt
@@ -194,29 +151,6 @@ class SpiceReserve(override val id: Long, override val transform: Transform = Tr
                 t.x
                 .toInt(), t.y
                 .toInt())
-            g.fillRect(t.x.toInt(), t.y.toInt() + 30, 150, 30)
-            color = Color.WHITE
-            drawString("Sell spice reserve", t.x.toInt() + 20, t.y.toInt() + 50)
-        }
-    }
-
-    override fun size(): Rectangle {
-        return Rectangle(transform.x.toInt(), transform.y.toInt() + 30, 150, 30)
-    }
-
-    override fun onSpawn() {
-        EventBus.subscribe(id, this, EventType.MouseEvent)
-    }
-
-    override fun onDespawn() {
-        EventBus.unsubscribe(id)
-    }
-
-    override fun handleEvent(event: Event) {
-        if (event.type == EventType.MouseEvent) {
-            if (size().contains((event as MyMouseEvent).point)) {
-                sellReserve = true
-            }
         }
     }
 
@@ -225,5 +159,8 @@ class SpiceReserve(override val id: Long, override val transform: Transform = Tr
         spiceSilos = Game.seekEntity { it is SpiceSilos }[0] as SpiceSilos
         spiceExchangeRate = Game.seekEntity { it is SpiceExchangeRate }[0] as SpiceExchangeRate
         solariReserve = Game.seekEntity { it is SolariReserve }[0] as SolariReserve
+        sellReserveButton = Game.spawn { id ->
+            Button(id, transform, "Sell spice reserve") { sellReserve = true }
+        }
     }
 }
