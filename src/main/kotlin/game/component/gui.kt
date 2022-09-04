@@ -1,7 +1,8 @@
-package game
+package game.component
 
 import eu.macphail.GameNode
 import eu.macphail.UpdateResult
+import game.*
 import java.awt.Color
 import java.awt.Graphics2D
 import java.awt.Rectangle

@@ -1,6 +1,8 @@
 package game
 
 class Transform(var x: Double, var y: Double){
+    constructor() : this(0.0, 0.0)
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -21,5 +23,9 @@ class Transform(var x: Double, var y: Double){
 
     override fun toString(): String {
         return "Transform(x=$x, y=$y)"
+    }
+
+    fun slideRight(i: Int): Transform {
+        return Transform(x + i.toDouble(), y)
     }
 }

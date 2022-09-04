@@ -1,7 +1,11 @@
-package game
+package game.node
 
 import eu.macphail.GameNode
 import eu.macphail.UpdateResult
+import game.Button
+import game.Game
+import game.Gui
+import game.Transform
 import java.awt.Color
 import java.awt.Graphics2D
 
@@ -59,18 +63,34 @@ class SpiceHarvesters(override val id: Long, override val transform: Transform =
     var harvesters = 10
     var harvesterCost = 100
     var buyHarvester = false
+    var buy10Harvesters = false
+    var buy100Harvesters = false
     lateinit var solariReserve: SolariReserve
     lateinit var buyHarvesterButton: Button
+    lateinit var buy10HarvesterButton: Button
+    lateinit var buy100HarvesterButton: Button
 
     override fun update(dt: Double): UpdateResult {
         if (buyHarvester) {
-            if (solariReserve.amount() >= harvesterCost) {
-                solariReserve.pay(harvesterCost)
-                harvesters += 1
-            }
+            buyHarvesters(1)
+            buyHarvester = false
+        }
+        if (buy10Harvesters) {
+            buyHarvesters(10)
+            buyHarvester = false
+        }
+        if (buy100Harvesters) {
+            buyHarvesters(100)
             buyHarvester = false
         }
         return UpdateResult.Keep
+    }
+
+    private fun buyHarvesters(amount: Int) {
+        if (solariReserve.amount() >= harvesterCost * amount) {
+            solariReserve.pay(harvesterCost * amount)
+            harvesters += amount
+        }
     }
 
     override fun draw(g: Graphics2D) {
@@ -92,7 +112,9 @@ class SpiceHarvesters(override val id: Long, override val transform: Transform =
 
     override fun onReady() {
         solariReserve = Game.seekEntity { it is SolariReserve }[0] as SolariReserve
-        buyHarvesterButton = Gui.makeButton(transform, "Buy spice harvester") { buyHarvester = true }
+        buyHarvesterButton = Gui.makeButton(transform, "Buy harvester") { buyHarvester = true }
+        buy10HarvesterButton = Gui.makeButton(transform.slideRight(160), "Buy 10 harvesters") { buy10Harvesters = true }
+        buy100HarvesterButton = Gui.makeButton(transform.slideRight(320), "Buy 100 harvesters") { buy100Harvesters = true }
     }
 }
 

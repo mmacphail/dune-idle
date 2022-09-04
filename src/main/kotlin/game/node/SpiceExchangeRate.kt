@@ -1,14 +1,15 @@
-package game
+package game.node
 
 import eu.macphail.GameNode
 import eu.macphail.UpdateResult
+import game.Bounded
+import game.Transform
 import java.awt.*
 import java.awt.geom.AffineTransform
 import java.util.*
 import kotlin.math.abs
 import kotlin.math.floor
 import kotlin.math.round
-
 
 class SpiceExchangeRate(override val id: Long, override val transform: Transform = Transform(10.0, 250.0)) : GameNode,
     Bounded {
