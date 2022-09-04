@@ -6,6 +6,13 @@ import java.awt.Color
 import java.awt.Graphics2D
 import java.awt.Rectangle
 
+class Gui {
+    companion object {
+        fun makeButton(transform: Transform, text: String, onClick: () -> Unit): Button =
+            Game.spawn { id -> Button(id, transform, text, onClick) }
+    }
+}
+
 class Button(
     override val id: Long,
     override val transform: Transform,

@@ -4,7 +4,6 @@ import eu.macphail.GameNode
 import eu.macphail.UpdateResult
 import java.awt.Color
 import java.awt.Graphics2D
-import java.awt.Rectangle
 
 class SpiceSilos(override val id: Long, override val transform: Transform = Transform(10.0, 170.0)) : GameNode {
     var siloCapacity = 100
@@ -39,9 +38,7 @@ class SpiceSilos(override val id: Long, override val transform: Transform = Tran
 
     override fun onReady() {
         solariReserve = Game.seekEntity { it is SolariReserve }[0] as SolariReserve
-        buySiloButton = Game.spawn { id ->
-            Button(id, Transform(transform.x, transform.y), "Buy spice silo") { buySilo = true }
-        }
+        buySiloButton = Gui.makeButton(Transform(transform.x, transform.y), "Buy spice silo") { buySilo = true }
     }
 }
 
@@ -95,9 +92,7 @@ class SpiceHarvesters(override val id: Long, override val transform: Transform =
 
     override fun onReady() {
         solariReserve = Game.seekEntity { it is SolariReserve }[0] as SolariReserve
-        buyHarvesterButton = Game.spawn { id ->
-            Button(id, transform, "Buy spice harvester") { buyHarvester = true }
-        }
+        buyHarvesterButton = Gui.makeButton(transform, "Buy spice harvester") { buyHarvester = true }
     }
 }
 
@@ -159,8 +154,6 @@ class SpiceReserve(override val id: Long, override val transform: Transform = Tr
         spiceSilos = Game.seekEntity { it is SpiceSilos }[0] as SpiceSilos
         spiceExchangeRate = Game.seekEntity { it is SpiceExchangeRate }[0] as SpiceExchangeRate
         solariReserve = Game.seekEntity { it is SolariReserve }[0] as SolariReserve
-        sellReserveButton = Game.spawn { id ->
-            Button(id, transform, "Sell spice reserve") { sellReserve = true }
-        }
+        sellReserveButton = Gui.makeButton(transform, "Sell spice reserve") { sellReserve = true }
     }
 }
