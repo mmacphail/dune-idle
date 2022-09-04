@@ -2,9 +2,9 @@ package game.node
 
 import eu.macphail.GameNode
 import eu.macphail.UpdateResult
-import game.Button
+import game.component.Button
 import game.Game
-import game.Gui
+import game.component.Gui
 import game.Transform
 import java.awt.Color
 import java.awt.Graphics2D
