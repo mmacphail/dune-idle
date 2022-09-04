@@ -6,6 +6,7 @@ import game.component.Button
 import game.Game
 import game.component.Gui
 import game.Transform
+import game.component.BuyButtons
 import game.component.BuyCapability
 import java.awt.Color
 import java.awt.Graphics2D
@@ -64,9 +65,7 @@ class SpiceHarvesters(override val id: Long, override val transform: Transform =
     var harvesters = 10
     var harvesterCost = 100
     lateinit var solariReserve: SolariReserve
-    lateinit var buyHarvesterButton: Button
-    lateinit var buy10HarvesterButton: Button
-    lateinit var buy100HarvesterButton: Button
+    lateinit var buyButtons: BuyButtons
     lateinit var buyHarvesters: BuyCapability
 
     override fun update(dt: Double): UpdateResult {
@@ -95,12 +94,8 @@ class SpiceHarvesters(override val id: Long, override val transform: Transform =
 
     override fun onReady() {
         solariReserve = Game.seekEntity { it is SolariReserve }[0] as SolariReserve
-        buyHarvesterButton = Gui.makeButton(transform, "Buy harvester") { buyHarvesters.buyOnce = true }
-        buy10HarvesterButton =
-            Gui.makeButton(transform.slideRight(160), "Buy 10 harvesters") { buyHarvesters.buyTenTimes = true }
-        buy100HarvesterButton =
-            Gui.makeButton(transform.slideRight(320), "Buy 100 harvesters") { buyHarvesters.buyHundredTimes = true }
         buyHarvesters = BuyCapability(solariReserve, harvesterCost) { units -> harvesters += units }
+        buyButtons = BuyButtons(transform, "harvester", buyHarvesters )
     }
 }
 

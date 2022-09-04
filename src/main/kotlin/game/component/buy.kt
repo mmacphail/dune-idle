@@ -2,7 +2,7 @@ package game.component
 
 import game.node.SolariReserve
 
-class BuyCapability(val solariReserve: SolariReserve, val cost: Int, val acquire: (Int) -> Unit) {
+class BuyCapability(private val solariReserve: SolariReserve, private val cost: Int, val acquire: (Int) -> Unit) {
     var buyOnce: Boolean = false
     var buyTenTimes: Boolean = false
     var buyHundredTimes: Boolean = false
