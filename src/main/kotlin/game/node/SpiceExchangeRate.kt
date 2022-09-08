@@ -21,7 +21,32 @@ class SpiceExchangeRate(override val id: Long, override val transform: Transform
     private val upperBound = 200
     var numberOfSecondsBeforeNextUpdate = 5
     var accumulatedTime = 0.0
-    var values = (1..11).map { random.nextInt(lowerBound, upperBound + 1) }.toList()
+    var values = (1..11).map { _ -> 100 }
+
+    private enum class MarketNextMove(val modifier: Int) {
+        Crash(-40),
+        Boom(+20),
+        SlowIncrease(+5),
+        SlowDecrease(-5),
+        HighIncrease(+10),
+        HighDecrease(-10)
+    }
+
+    private fun spiceMarketBehavior(): Map<IntRange, MarketNextMove> = mapOf(
+        (0..5) to MarketNextMove.Crash,
+        (6..10) to MarketNextMove.Boom,
+        (11..40) to MarketNextMove.SlowIncrease,
+        (41..60) to MarketNextMove.SlowDecrease,
+        (61..80) to MarketNextMove.HighIncrease,
+        (81..99) to MarketNextMove.HighDecrease
+    )
+
+    private fun calculateNextMarketRate(currentValue: Int): Int {
+        val i = random.nextInt(0, 100)
+        val modifier = spiceMarketBehavior().firstNotNullOf { (range, move) -> if (i in range) move.modifier else null }
+        val newValue = currentValue + modifier
+        return newValue.coerceAtMost(upperBound).coerceAtLeast(lowerBound)
+    }
 
     private fun valueToGraphY(v: Int): Int {
         return abs(round(height / (upperBound / v.toDouble())) - height).toInt() - height / 2
@@ -30,7 +55,7 @@ class SpiceExchangeRate(override val id: Long, override val transform: Transform
     override fun update(dt: Double): UpdateResult {
         accumulatedTime += dt
         if (accumulatedTime >= 5.0) {
-            values = values.drop(1) + random.nextInt(lowerBound, upperBound + 1)
+            values = values.drop(1) + calculateNextMarketRate(currentRate())
             accumulatedTime = 0.0
             numberOfSecondsBeforeNextUpdate = 5
         } else {
@@ -94,4 +119,14 @@ class SpiceExchangeRate(override val id: Long, override val transform: Transform
 
     override fun size(): Rectangle =
         Rectangle(transform.x.toInt(), transform.y.toInt(), width, height)
+
+    override fun onReady() {
+        this.values = (1..11).fold(listOf<Int>()) { acc, _ ->
+            if(acc.isEmpty()) {
+                acc + calculateNextMarketRate(100)
+            } else {
+                acc + calculateNextMarketRate(acc.last())
+            }
+        }
+    }
 }
